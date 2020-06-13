@@ -1,13 +1,16 @@
 import pandas as pd
 import xgboost as xgb
+import numpy as np
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error
 
 # Load data
-X = pd.read_csv("C:\\Users\\natyh\\PycharmProjects\\Kaggle_Titanic\\data\\train.csv")
+X = pd.read_csv(".\\data\\train.csv")
 y = X['Survived']
-X_test_original = pd.read_csv("C:\\Users\\natyh\\PycharmProjects\\Kaggle_Titanic\\data\\test.csv")
+X_test_original = pd.read_csv(".\\data\\test.csv")
 X_test = X_test_original
-X_train, X_valid, y_train_dummy, y_valid_dummy = train_test_split(X, y, train_size=0.8, test_size=0.2, random_state=0)
+X_train, X_valid, y_train_dummy, y_valid_dummy = train_test_split(X, y, train_size=0.8, test_size=0.2,
+                                                                  random_state=np.random)
 
 # Dropping non vital columns
 X_train = X_train.drop('Name', axis=1)
@@ -52,12 +55,16 @@ y_valid = X_valid['Survived']
 X_valid = X_valid.drop('Survived', axis=1)
 
 # Define and fit model
-model = xgb.XGBClassifier(max_depth=3, n_estimators=300, learning_rate=0.05)
+model = xgb.XGBClassifier(max_depth=3, n_estimators=300, learning_rate=0.03)
 model.fit(X_train, y_train)
 
+# Check
 y_pred = model.predict(X_test)
+y_pred_valid = model.predict(X_valid)
+mae = mean_absolute_error(y_valid, y_pred_valid)
+print("Mean absolute error for validity is", mae)
+
 
 submission = pd.DataFrame({'PassengerId': X_test['PassengerId'],
                            'Survived': y_pred})
-print(submission.shape)
 submission.to_csv("submission.csv", index=False)
